@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Odyssey — HiDevs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- MENTOR AGENT (persistent, all screens) -->
+<button id="mentorBtn" onclick="toggleMentor()"><span class="mdot"></span> Ask Mentor</button>
+<div id="mentorPanel">
+  <div class="mentor-head">
+    <div class="mentor-head-l">
+      <div class="mentor-avatar">🧭</div>
+      <div><b>Mentor Agent</b><span id="mentorLive">● context-aware</span></div>
+    </div>
+    <button class="mentor-close" onclick="toggleMentor()">✕</button>
+  </div>
+  <div class="mentor-body">
+    <div class="mentor-context" id="mentorContext">Currently: Choose Campaign</div>
+    <div class="mentor-msg"><b>Mentor</b><span id="mentorMsg">Loading…</span></div>
+  </div>
+  <div class="mentor-input-row">
+    <input class="mentor-input" id="mentorInput" placeholder="Ask about this step…">
+    <button class="mentor-send" id="mentorSend">→</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">H</div>
+      <div><div class="brand-name">HiDevs</div><div class="brand-sub" id="topSub">Agent Odyssey</div></div>
+    </div>
+    <div class="stat-cluster">
+      <div class="stat"><span class="stat-label">Elapsed</span><span class="stat-value timer" id="timerVal">00:00</span></div>
+      <div class="stat"><span class="stat-label">XP</span><span class="stat-value xp" id="xpVal">0</span></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1 : CHOOSE CAMPAIGN -->
+  <div class="screen show" id="screen-campaign">
+    <div class="panel">
+      <div class="panel-title">Choose campaign</div>
+      <div class="campaign-grid" id="campaignGrid"><!-- populated from /campaigns --></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 : PROJECT SETUP (Level 0) -->
+  <div class="screen" id="screen-setup">
+    <div class="panel">
+      <div class="crumb"><b>Level 0</b> · Project Setup</div>
+      <h1 class="mtitle" id="setupTitle"></h1>
+      <p class="mdesc" id="setupDesc"></p>
+      <div class="toggle-row" id="setupToggleRow"></div>
+      <div class="term" id="termBlock"></div>
+      <p class="note">We can't verify your local machine — once you've run these, just click Next.</p>
+      <div class="continue-row">
+        <span class="progress-note">Level 0 · no XP, no verification</span>
+        <button class="cta ready" id="setupNextBtn">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3 : LEVEL INTRO -->
+  <div class="screen" id="screen-levelintro">
+    <div class="panel">
+      <div class="crumb" id="liCrumb"></div>
+      <div class="level-hero">
+        <div class="level-num" id="liNum">01</div>
+        <div>
+          <h1 class="mtitle" style="margin-bottom:2px;" id="liTitle"></h1>
+          <p class="mdesc" style="margin-bottom:0;" id="liDesc"></p>
+        </div>
+      </div>
+      <div class="mission-list" id="levelMissionList"></div>
+      <div class="continue-row">
+        <span class="progress-note" id="levelXpNote"></span>
+        <button class="cta ready" id="startLevelBtn">Start level →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4 : MISSION MINI-STEPS OVERVIEW -->
+  <div class="screen" id="screen-ministeps">
+    <div class="panel">
+      <div class="crumb" id="msCrumb"></div>
+      <h1 class="mtitle" id="msTitle"></h1>
+      <p class="mdesc" id="msDesc"></p>
+      <div class="step-flow" id="stepFlow"></div>
+      <div class="continue-row">
+        <span class="progress-note" id="msXpNote"></span>
+        <button class="cta ready" id="beginMissionBtn">Begin mission →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5 : EDITOR -->
+  <div class="screen" id="screen-editor">
+    <div class="main">
+      <div class="panel"><div class="panel-title">Project files</div><div id="fileTree"></div></div>
+      <div>
+        <div class="panel">
+          <div class="crumb" id="edCrumb"></div>
+          <div class="mini-tracker" id="miniTracker"></div>
+          <div class="brief-row">
+            <span class="chip reward">+<span id="rewardXp">0</span> XP</span>
+            <span class="chip diff">Difficulty: <span id="diffVal"></span></span>
+            <span class="chip">~<span id="estTime">0</span> min</span>
+          </div>
+          <h1 class="mtitle" id="mTitle"></h1>
+          <p class="mdesc" id="mDesc"></p>
+          <div class="editor">
+            <div class="editor-bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span class="editor-fname" id="fname"></span></div>
+            <div class="code" id="codeArea"></div>
+          </div>
+          <div class="panel" style="background:var(--panel-2);margin-bottom:16px;">
+            <div class="panel-title">Fill in this mission's fields</div>
+            <div id="slotForm"></div>
+          </div>
+          <div class="panel" style="background:var(--panel-2);margin-bottom:16px;">
+            <div class="panel-title">Mission checklist</div>
+            <div id="checklist"></div>
+          </div>
+          <div class="continue-row">
+            <span class="progress-note" id="progNote"></span>
+            <button class="cta" id="continueBtn" disabled>Continue →</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Mission assistant</div>
+        <div class="assist-tab on" data-tab="tradeoffs">Trade-offs</div>
+        <div class="assist-tab" data-tab="mistakes">Common mistakes</div>
+        <div class="assist-tab" data-tab="docs">Docs</div>
+        <div class="assist-body" id="assistBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 6 : LEVEL COMPLETE -->
+  <div class="screen" id="screen-levelcomplete">
+    <div class="panel center-panel">
+      <h2>Level complete</h2>
+      <p id="levelCompleteDesc"></p>
+      <div class="badge-row"><div class="badge">🏆</div><div class="badge">⚡</div><div class="badge">🔓</div></div>
+      <button class="cta ready" onclick="goTo('summary')">Finish campaign →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 7 : CAMPAIGN SUMMARY (real Lyzr agent lives here) -->
+  <div class="screen" id="screen-summary">
+    <div class="panel center-panel">
+      <h2 id="summaryHeadline">Agent — built.</h2>
+      <p id="summaryDesc"></p>
+      <div class="big-stat" id="finalTime">00:00</div>
+      <p style="margin-top:6px;">total build time · <span id="finalXp">0</span> XP earned</p>
+
+      <div class="panel" style="background:var(--panel-2);text-align:left;margin-top:24px;">
+        <div class="panel-title">Your real agent</div>
+        <div id="agentMockNotice" class="note" style="display:none;">
+          ⚠️ No LYZR_API_KEY configured — this agent was created in mock mode. Set the key in backend/.env and rerun to get a real Lyzr agent ID.
+        </div>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:10px;">Agent ID: <code id="agentIdOut" style="color:var(--purple-light)"></code></p>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:4px;"><b>Test message sent:</b> <span id="testMsgOut"></span></p>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;"><b>Response:</b> <span id="testRespOut"></span></p>
+
+        <div class="panel-title">Chat with it</div>
+        <div id="chatLog" style="max-height:180px;overflow-y:auto;margin-bottom:10px;"></div>
+        <div class="mentor-input-row" style="padding:0;border-top:none;">
+          <input class="mentor-input" id="chatInput" placeholder="Ask your new agent something…">
+          <button class="mentor-send" id="chatSend">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="app.js"></script>
+</body>
+</html>

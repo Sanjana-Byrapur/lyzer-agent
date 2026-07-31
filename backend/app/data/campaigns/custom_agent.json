@@ -1,0 +1,78 @@
+{
+  "key": "custom-agent",
+  "title": "Custom Agent",
+  "badge": "Build Anything",
+  "description": "No template, no domain assumptions. Describe the agent you actually want, and it gets built exactly as you describe it.",
+  "estMinutes": 15,
+  "locked": false,
+  "setup": {
+    "title": "Get your project on disk",
+    "description": "Same rule as every campaign: this runs locally, and Lyzr only comes in at the end to actually create and run your agent.",
+    "options": {
+      "clone": {
+        "label": "Clone Template",
+        "sub": "Minimal boilerplate, no assumptions baked in",
+        "commands": [
+          "git clone https://github.com/hidevs/custom-agent-template",
+          "cd custom-agent-template",
+          "python -m venv .venv && source .venv/bin/activate",
+          "pip install lyzr-adk"
+        ]
+      },
+      "scratch": {
+        "label": "Start from Scratch",
+        "sub": "Empty repo, nothing pre-decided",
+        "commands": [
+          "mkdir custom-agent && cd custom-agent",
+          "python -m venv .venv && source .venv/bin/activate",
+          "pip install lyzr-adk",
+          "touch agent.py"
+        ]
+      }
+    }
+  },
+  "levels": [
+    {
+      "key": "level-1-design",
+      "title": "Design Your Agent",
+      "desc": "One mission, five questions. Nothing here is templated for a specific use case — every field maps directly onto a real Lyzr agent.",
+      "missions": [
+        {
+          "key": "m1",
+          "file": "agent.py",
+          "title": "Mission 1 \u2014 Design your agent",
+          "desc": "There's no 'right' answer to any of these \u2014 this is your agent, doing your job, in your words.",
+          "reward": 50,
+          "diff": "Open-ended",
+          "est": 10,
+          "miniSteps": [
+            {"label": "Name your agent", "sub": "Whatever you want to call it"},
+            {"label": "Choose your model", "sub": "Speed vs. reasoning \u2014 your call, no wrong answer"},
+            {"label": "Define its role", "sub": "One sentence: what job is this agent doing?"},
+            {"label": "Define its goal", "sub": "What does success look like when it runs?"},
+            {"label": "Write its instructions", "sub": "How it should behave on every single call"}
+          ],
+          "slots": [
+            {"key": "agent_name", "label": "agent_name", "type": "text", "placeholder": "e.g. Recipe Remix Bot", "mapsTo": "name", "required": true},
+            {"key": "model", "label": "model", "type": "select", "options": ["gemini-2.5-flash", "gemini-2.5-pro", "gpt-4o-mini"], "mapsTo": "provider", "required": true},
+            {"key": "role", "label": "role", "type": "text", "placeholder": "what is this agent, in one line", "mapsTo": "role", "required": true},
+            {"key": "goal", "label": "goal", "type": "text", "placeholder": "what outcome does it produce", "mapsTo": "goal", "required": true},
+            {"key": "instructions", "label": "instructions", "type": "text", "placeholder": "how it should behave on every call", "mapsTo": "instructions", "required": true}
+          ],
+          "codeTemplate": "from lyzr_adk import Studio\n\nstudio = Studio(api_key=API_KEY)\n\nagent = studio.create_agent(\n    name={{agent_name|tojson}},\n    provider={{model|tojson}},\n    role={{role|tojson}},\n    goal={{goal|tojson}},\n    instructions={{instructions|tojson}}\n)\n",
+          "assist": {
+            "tradeoffs": "There's no wrong shape here \u2014 but a narrow, specific role produces more predictable behavior than a broad one. If you're unsure, write the role as if you were assigning this exact job to a new hire on day one.",
+            "mistakes": "The most common mistake at this step: writing 'goal' as a personality trait ('be helpful and friendly') instead of an outcome ('resolve billing questions without escalating to a human'). Lyzr uses goal to steer behavior and tool-use decisions, not tone.",
+            "docs": "See Lyzr Quickstart: Option D \u2014 every field here maps 1:1 onto the real POST /v3/agent payload (name, provider, role, goal, instructions)."
+          }
+        }
+      ]
+    }
+  ],
+  "finalize": {
+    "agentNameTemplate": "{{agent_name}}",
+    "role": "{{role}}",
+    "goalTemplate": "{{goal}}",
+    "testMessage": "Hi \u2014 introduce yourself and tell me what you can help with."
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "key": "mcp-tool-agent",
+  "title": "MCP Tool Agent",
+  "badge": "MCP \u00b7 Lyzr Tools",
+  "description": "Wire an agent to an external tool over MCP, so it can take real actions instead of just answering questions.",
+  "estMinutes": 35,
+  "locked": false,
+  "setup": {
+    "title": "Get your project on disk",
+    "description": "Same rule as always: this runs locally. Lyzr only comes in when it's time to actually create and run the agent.",
+    "options": {
+      "clone": {
+        "label": "Clone Template",
+        "sub": "Pre-wired MCP server stub included",
+        "commands": [
+          "git clone https://github.com/hidevs/mcp-tool-agent-template",
+          "cd mcp-tool-agent-template",
+          "python -m venv .venv && source .venv/bin/activate",
+          "pip install -r requirements.txt"
+        ]
+      },
+      "scratch": {
+        "label": "Start from Scratch",
+        "sub": "Empty repo, you wire the MCP server yourself",
+        "commands": [
+          "mkdir mcp-tool-agent && cd mcp-tool-agent",
+          "python -m venv .venv && source .venv/bin/activate",
+          "pip install lyzr-adk mcp",
+          "touch agent.py mcp_server.py"
+        ]
+      }
+    }
+  },
+  "levels": [
+    {
+      "key": "level-1-tool-agent",
+      "title": "Tool-Connected Agent",
+      "desc": "Give your agent a real action to take, not just a document to read.",
+      "missions": [
+        {
+          "key": "m1",
+          "file": "agent.py",
+          "title": "Mission 1 \u2014 Define the agent's job",
+          "desc": "Before wiring any tool, decide what this agent is actually for. Pick a model and describe its role clearly \u2014 the tool step depends on this being specific.",
+          "reward": 40,
+          "diff": "Easy",
+          "est": 10,
+          "miniSteps": [
+            {"label": "Choose your model", "sub": "Same trade-off as any agent: speed vs reasoning"},
+            {"label": "Write the role", "sub": "One sentence: what job is this agent doing?"},
+            {"label": "Write the goal", "sub": "What does success look like for this agent?"}
+          ],
+          "slots": [
+            {"key": "model", "label": "model", "type": "select", "options": ["gemini-2.5-flash", "gemini-2.5-pro", "gpt-4o-mini"], "mapsTo": "provider", "required": true},
+            {"key": "role", "label": "role", "type": "text", "placeholder": "e.g. GitHub issue triage assistant", "mapsTo": "role", "required": true},
+            {"key": "goal", "label": "goal", "type": "text", "placeholder": "e.g. label and prioritize incoming issues", "mapsTo": "goal", "required": true}
+          ],
+          "codeTemplate": "# mcp_server.py already exposes tool endpoints \u2014 you don't touch that\nfrom lyzr_adk import Studio\n\nstudio = Studio(api_key=API_KEY)\n\nagent = studio.create_agent(\n    name=\"MCP Tool Agent\",\n    provider={{model|tojson}},\n    role={{role|tojson}},\n    goal={{goal|tojson}},\n    instructions=\"Use the connected tool when the user's request requires an action, not just an answer.\"\n)\n",
+          "assist": {
+            "tradeoffs": "A vague role (\"helper bot\") makes the next mission's tool wiring ambiguous. A specific role (\"GitHub issue triage assistant\") makes it obvious which single tool call it needs.",
+            "mistakes": "Writing the goal as a personality trait (\"be helpful\") instead of an outcome (\"label and prioritize issues\") \u2014 Lyzr uses goal to steer tool-use decisions, not tone.",
+            "docs": "See Lyzr docs: Agent Studio > Tools > Overview for how tool connections attach to an existing agent."
+          }
+        },
+        {
+          "key": "m2",
+          "file": "agent.py",
+          "title": "Mission 2 \u2014 Connect the MCP tool",
+          "desc": "mcp_server.py already exposes a working tool endpoint. Your job: point the agent at it and decide when it's allowed to call it.",
+          "reward": 40,
+          "diff": "Medium",
+          "est": 15,
+          "miniSteps": [
+            {"label": "Name the tool endpoint", "sub": "Which MCP tool this agent is allowed to call"},
+            {"label": "Set the trigger condition", "sub": "When should the agent actually invoke it vs just answer in text?"}
+          ],
+          "slots": [
+            {"key": "tool_endpoint", "label": "tool_endpoint", "type": "text", "placeholder": "mcp://localhost:8090/tools/...", "mapsTo": "tools.endpoint", "required": true},
+            {"key": "trigger_condition", "label": "trigger_condition", "type": "text", "placeholder": "e.g. only when user asks to take an action", "mapsTo": "tools.trigger", "required": true}
+          ],
+          "codeTemplate": "agent.connect_tool(\n    endpoint={{tool_endpoint|tojson}},\n    trigger={{trigger_condition|tojson}}\n)\n",
+          "assist": {
+            "tradeoffs": "A tight trigger condition means fewer accidental tool calls but more \"I can't do that\" responses. A loose one means more automation but more risk of unintended actions.",
+            "mistakes": "The #1 MCP mistake: forgetting the agent needs the trigger condition in plain language, not code \u2014 Lyzr's model decides when to call the tool based on how you describe the condition, not a regex.",
+            "docs": "See Lyzr docs: Responsible AI guardrails before letting any tool-connected agent run unattended in production."
+          }
+        }
+      ]
+    }
+  ],
+  "finalize": {
+    "agentNameTemplate": "MCP Tool Agent \u2014 {{user}}",
+    "role": "{{role}}",
+    "goalTemplate": "{{goal}} Use the connected tool at {{tool_endpoint}} when: {{trigger_condition}}.",
+    "testMessage": "What can you do, and what tool do you have access to?"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "key": "retriever-agent",
+  "title": "Retriever Agent",
+  "badge": "LangChain \u00b7 ChromaDB",
+  "description": "Build a simple agent that answers from your own documents using vector retrieval.",
+  "estMinutes": 40,
+  "locked": false,
+  "setup": {
+    "title": "Get your project on disk",
+    "description": "Everything from here runs locally on your machine \u2014 the platform never hosts or executes your agent code. Lyzr only comes in at the very end, to actually run the agent you build.",
+    "options": {
+      "clone": {
+        "label": "Clone Template",
+        "sub": "Pre-wired boilerplate + folders",
+        "commands": [
+          "git clone https://github.com/hidevs/retriever-agent-template",
+          "cd retriever-agent-template",
+          "python -m venv .venv && source .venv/bin/activate",
+          "pip install -r requirements.txt"
+        ]
+      },
+      "scratch": {
+        "label": "Start from Scratch",
+        "sub": "Empty repo, you build structure",
+        "commands": [
+          "mkdir retriever-agent && cd retriever-agent",
+          "python -m venv .venv && source .venv/bin/activate",
+          "pip install langchain chromadb",
+          "touch agent.py chroma_setup.py"
+        ]
+      }
+    }
+  },
+  "levels": [
+    {
+      "key": "level-1-root-agent",
+      "title": "Root Agent",
+      "desc": "Bring agent.py to life and wire it to retrieval.",
+      "missions": [
+        {
+          "key": "m1",
+          "file": "agent.py",
+          "title": "Mission 1 \u2014 Bring the agent to life",
+          "desc": "The Chroma boilerplate is already wired up in chroma_setup.py \u2014 you don't touch that. Your job: pick the model and write the instruction it runs on.",
+          "reward": 40,
+          "diff": "Easy",
+          "est": 12,
+          "miniSteps": [
+            {"label": "Choose your model", "sub": "Flash vs Pro \u2014 a real trade-off, not a formality"},
+            {"label": "Write the instruction", "sub": "What the agent is told to do on every call"},
+            {"label": "Set the temperature", "sub": "Controls how deterministic answers are"}
+          ],
+          "slots": [
+            {
+              "key": "model",
+              "label": "model",
+              "type": "select",
+              "options": ["gemini-2.5-flash", "gemini-2.5-pro", "gpt-4o-mini"],
+              "mapsTo": "provider",
+              "required": true
+            },
+            {
+              "key": "instructions",
+              "label": "instructions",
+              "type": "text",
+              "placeholder": "write agent instruction\u2026",
+              "mapsTo": "instructions",
+              "required": true
+            },
+            {
+              "key": "temperature",
+              "label": "temperature",
+              "type": "number",
+              "placeholder": "0.0\u20131.0",
+              "mapsTo": "temperature",
+              "required": true
+            }
+          ],
+          "codeTemplate": "# imports + Chroma client are pre-wired in chroma_setup.py\nfrom chroma_setup import retriever\nfrom langchain.agents import create_agent\n\nroot_agent = create_agent(\n    model={{model|tojson}},\n    instructions={{instructions|tojson}},\n    temperature={{temperature}},\n    retriever=retriever  # \u2190 from boilerplate, already connected\n)\n",
+          "assist": {
+            "tradeoffs": "gemini-2.5-flash: faster, cheaper, good for tool-routing.\ngemini-2.5-pro: stronger reasoning, slower, better for ambiguous queries.\ngpt-4o-mini: solid general default if you want an OpenAI-backed model instead.",
+            "mistakes": "Setting temperature above 0.5 for a factual retrieval agent tends to make it paraphrase away from the source text. Keep it low (0.0\u20130.3) for anything answer-from-documents.",
+            "docs": "See Lyzr Quickstart: Option C/D for how `provider`/`instructions` map directly onto agent creation params."
+          }
+        },
+        {
+          "key": "m2",
+          "file": "agent.py",
+          "title": "Mission 2 \u2014 Wire the retriever behavior",
+          "desc": "Your agent already talks to Chroma through the boilerplate client. Now decide how it searches: which collection, and how many chunks it pulls back per query.",
+          "reward": 35,
+          "diff": "Easy",
+          "est": 10,
+          "miniSteps": [
+            {"label": "Name the collection", "sub": "Which Chroma collection this agent searches"},
+            {"label": "Configure top_k", "sub": "How many chunks come back per query"}
+          ],
+          "slots": [
+            {
+              "key": "collection",
+              "label": "collection",
+              "type": "text",
+              "placeholder": "collection name",
+              "mapsTo": "knowledge_base.collection",
+              "required": true
+            },
+            {
+              "key": "top_k",
+              "label": "top_k",
+              "type": "number",
+              "placeholder": "3\u20135",
+              "mapsTo": "knowledge_base.top_k",
+              "required": true
+            }
+          ],
+          "codeTemplate": "# \u2014 grown from Mission 1 \u2014\nfrom chroma_setup import retriever\nfrom langchain.agents import create_agent\n\nroot_agent = create_agent(\n    model={{model|tojson}},\n    instructions={{instructions|tojson}},\n    temperature={{temperature}},\n    retriever=retriever,\n    search_kwargs={\n        \"collection\": {{collection|tojson}},\n        \"top_k\": {{top_k}}\n    }\n)\n",
+          "assist": {
+            "tradeoffs": "Small top_k (3\u20135) keeps answers focused. Large top_k (10+) gives more coverage but dilutes relevance.",
+            "mistakes": "Setting top_k too high floods context and hurts answer quality. Most single-topic knowledge bases work well at 3\u20135.",
+            "docs": "See Lyzr docs: Agent Studio > Knowledge Base for how retrieval config is represented server-side."
+          }
+        }
+      ]
+    }
+  ],
+  "finalize": {
+    "agentNameTemplate": "Retriever Agent \u2014 {{user}}",
+    "role": "Document Q&A assistant",
+    "goalTemplate": "Answer questions accurately using retrieved context from the '{{collection}}' collection, top_k={{top_k}}.",
+    "testMessage": "What can you help me with, based on the documents you have access to?"
+  }
+}
