@@ -1,113 +1,229 @@
 # Agent Odyssey
 
-A gamified, mission-based platform where developers build a real AI agent step
-by step — built for the HiDevs "Mission Flow V2" evaluation task.
+A gamified, mission-based platform that guides developers through building **their own custom AI agent** from scratch.
 
-Everything about the *platform* (missions, gamification, code generation,
-mentor) is custom-built. **Lyzr is used only for agent execution** — creating
-the real agent and running it — exactly as the task required.
+Instead of overwhelming users with long configuration forms, Agent Odyssey transforms agent development into a guided learning journey. Each mission collects only the information needed at that stage, gradually assembling a complete AI agent ready for deployment.
 
----
-
-## What's actually real here (vs. the reference mockup)
-
-The reference HTML you were given is explicitly a UX mockup — its own code
-says so: `Integration point — will call the real mentor agent per screen
-context`. This project makes every one of those stubs real:
-
-| In the reference | Here |
-|---|---|
-| Hardcoded `missions` JS array | Real campaign JSON files, loaded by a backend engine — add a new campaign without touching any code |
-| Fake `codeLines` with styled `<span>` tags | A real Jinja2 template rendered server-side from what the user actually typed |
-| Mentor panel stub | A real endpoint — calls an actual Lyzr agent if configured, or a genuinely specific fallback otherwise |
-| "Campaign complete" screen with no agent | A real `POST /v3/agent` call to Lyzr, followed by a real `POST /v3/agent/{id}/chat` test message, shown live on the summary screen |
-| Static demo data | SQLite-backed progress tracking per user, so refreshing the page doesn't lose your place |
+Built for the **HiDevs Mission Flow V2** evaluation.
 
 ---
 
-## Architecture
+# Design Philosophy
 
+Most AI agent platforms expect users to understand prompts, models, tools, retrieval systems, and deployment before they can even get started.
+
+Agent Odyssey changes that experience.
+
+Instead of exposing every configuration option upfront, the platform:
+
+- Breaks development into guided missions
+- Collects only the required information at each step
+- Explains every decision
+- Generates the agent configuration progressively
+- Creates a working AI agent at the end using **Lyzr**
+
+The focus is not just creating an AI agent, but making the entire developer journey intuitive and engaging.
+
+---
+
+# Features
+
+- 🎯 Mission-based AI agent builder
+- 🤖 Build any custom AI agent
+- 📚 Guided developer experience
+- 🧠 Context-aware AI mentor
+- ⚡ Progressive code generation
+- 💾 Persistent campaign progress
+- 🔄 Dynamic mission engine
+- 🚀 Lyzr agent deployment
+- 💬 Chat with your generated agent
+- 🎮 Gamified learning experience
+
+---
+
+# Agent Creation Flow
+
+```text
+Idea
+   ↓
+Define the Problem
+   ↓
+Define the Agent Role
+   ↓
+Choose the LLM
+   ↓
+Configure Instructions
+   ↓
+Select Knowledge Sources
+   ↓
+Choose Tools
+   ↓
+Review Configuration
+   ↓
+Generate Agent
+   ↓
+Deploy using Lyzr
+   ↓
+Chat with your Agent
 ```
+
+---
+
+# Architecture
+
+```text
 agent-odyssey/
 ├── backend/
+│
 │   ├── app/
-│   │   ├── main.py             # FastAPI routes — the only HTTP-aware file
-│   │   ├── campaign_engine.py  # Headless core: progress, validation, XP — no HTTP here
-│   │   ├── codegen.py          # Renders real code files from mission templates + filled slots
-│   │   ├── lyzr_client.py      # Real Lyzr REST integration (+ mock-mode fallback)
-│   │   ├── mentor.py           # Context-aware mentor (real Lyzr agent or rich fallback)
-│   │   ├── models.py           # SQLAlchemy: User, CampaignProgress, CreatedAgent
-│   │   ├── schemas.py          # Pydantic request/response models
-│   │   └── data/campaigns/     # Campaign definitions — pure JSON, no code changes needed to add one
-│   ├── requirements.txt
-│   └── .env.example
-└── frontend/
-    ├── index.html   # Same screen structure as the reference (campaign → setup → level → mission → editor → summary)
-    ├── styles.css   # Same visual language/design tokens as the reference
-    └── app.js       # Fetches everything from the backend — no hardcoded mission data
+│   │
+│   ├── main.py
+│   ├── campaign_engine.py
+│   ├── codegen.py
+│   ├── mentor.py
+│   ├── lyzr_client.py
+│   ├── models.py
+│   ├── schemas.py
+│   └── data/
+│       └── campaigns/
+│
+├── frontend/
+│
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+│
+└── README.md
 ```
-
-**Why split `campaign_engine.py` from `main.py`:** the engine is pure functions
-operating on dicts and DB rows — no `Request`/`Response` objects anywhere in
-it. That's what makes it testable without spinning up a server, and it's the
-part that actually matters if someone reviews this code (anyone can wire up
-routes; the logic underneath is the real work).
 
 ---
 
-## Running it locally
+# How It Works
 
-### 1. Backend
+## Step 1 — Describe Your Agent
+
+Tell Agent Odyssey what you want to build.
+
+Example:
+
+> Build an AI coding mentor that teaches DSA and reviews code.
+
+---
+
+## Step 2 — Guided Missions
+
+Instead of asking for everything at once, the platform walks you through focused missions.
+
+Examples:
+
+- Define the agent's goal
+- Choose the LLM
+- Configure behavior
+- Add knowledge sources
+- Configure tools
+- Review the final configuration
+
+---
+
+## Step 3 — Code Generation
+
+As missions are completed, the backend progressively generates the underlying agent configuration and code templates.
+
+---
+
+## Step 4 — Agent Deployment
+
+After the final mission, the platform sends the generated configuration to **Lyzr** to create a real AI agent.
+
+---
+
+## Step 5 — Test Your Agent
+
+Immediately start chatting with the newly created agent from within the platform.
+
+---
+
+# Running Locally
+
+## Backend
+
+### macOS / Linux
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+
+python -m venv .venv
+
+source .venv/bin/activate
+
 pip install -r requirements.txt
+
 cp .env.example .env
-# Optional: add your real Lyzr API key to .env (LYZR_API_KEY=...)
-# Get one from studio.lyzr.ai > Account > API Keys
+```
+
+### Windows
+
+```powershell
+cd backend
+
+py -m venv .venv
+
+.\.venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+
+copy .env.example .env
+```
+
+Start the backend
+
+```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-Without a key set, everything still works end to end — agent creation and
-chat both fall back to a clearly-labeled mock mode (`"mock": true` in every
-response) so you can demo and test the full flow before wiring in a real key.
+---
 
-### 2. Frontend
-
-The frontend is plain HTML/CSS/JS — no build step. Just serve it statically:
+## Frontend
 
 ```bash
 cd frontend
+
 python -m http.server 5500
 ```
 
-Then open `http://localhost:5500` in your browser. Make sure the backend
-(`localhost:8000`) is running first — `app.js` hits it directly.
+Open
 
-### 3. Try the full loop
-
-1. Pick **Retriever Agent** on the campaign screen.
-2. Choose Clone Template or Start from Scratch, click Next.
-3. Start the level, begin Mission 1.
-4. Fill in model / instructions / temperature — watch the code panel update live.
-5. Continue to Mission 2, fill in collection / top_k — notice Mission 1's values are already baked into the file.
-6. Complete the level — this is the real payoff: the backend creates a real
-   agent via Lyzr (or a mock, if no key is set) and runs a test message
-   against it, shown right there on the summary screen.
-7. Chat with your finished agent directly from the summary screen.
+```
+http://localhost:5500
+```
 
 ---
 
-## What's already tested
+# Environment Variables
 
-The full backend loop — setup → both missions → completion → finalize (Lyzr
-call) → mentor — was run end-to-end during development and verified working,
-including a real bug caught and fixed along the way: Mission 2's code preview
-was initially missing Mission 1's already-filled values (model/instructions/
-temperature), since the file `agent.py` is one evolving artifact across
-missions, not per-mission state. Fixed in `campaign_engine.collect_finalize_context`
-+ how `main.py` builds the code preview.
+Create a `.env` file.
+
+```env
+LYZR_API_KEY=your_api_key_here
+```
+
+If no API key is provided, the application automatically switches to **Mock Mode**, allowing the complete workflow to be demonstrated without creating a real Lyzr agent.
 
 ---
 
+# Example Agents You Can Build
+
+- Coding Mentor
+- Research Assistant
+- Resume Reviewer
+- AI Tutor
+- Travel Planner
+- Startup Advisor
+- Medical Assistant
+- Legal Assistant
+- Customer Support Bot
+- HR Assistant
+- Financial Advisor
+- Personal Productivity Coach
+
+Or simply describe your own idea.
