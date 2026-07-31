@@ -111,21 +111,3 @@ missions, not per-mission state. Fixed in `campaign_engine.collect_finalize_cont
 
 ---
 
-## What's deliberately left as a next step (not done yet)
-
-- **Real auth.** Right now every request operates as a single seeded user
-  (`get_current_user` in `main.py`). Swap this for real session/JWT auth —
-  nothing else needs to change since everything already keys off `user_id`.
-- **The "harden your agent" bonus mission** (prompt-injection self-test,
-  echoing Dave's own Jailbreak Challenge) — the campaign schema already
-  supports adding it as a new mission with no engine changes; it just isn't
-  authored yet.
-- **Second campaign polish.** `mcp-tool-agent.json` is fully built out (not
-  just a locked stub like in the reference) but hasn't been through the same
-  live-testing pass as `retriever-agent.json` yet.
-- **Real code generation to disk.** Right now the "editor" renders the file
-  in-browser; it doesn't yet write the actual `agent.py` to a local folder for
-  download. Worth adding a `/campaigns/{key}/download` endpoint that zips up
-  the final rendered files.
-- **CORS is wide open (`allow_origins=["*"]`)** — fine for local dev, tighten
-  before deploying anywhere real.
